@@ -1,0 +1,65 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "portfolio-5ee70",
+          "appId": "1:1082604851100:android:39fe34017408687960c259",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "portfolio-5ee70",
+          "configurations": {
+            "android": "1:1082604851100:android:39fe34017408687960c259",
+            "ios": "1:1082604851100:ios:0aae2c7d19bcb18f60c259",
+            "macos": "1:1082604851100:ios:0aae2c7d19bcb18f60c259",
+            "web": "1:1082604851100:web:91106c58186fd8f360c259",
+            "windows": "1:1082604851100:web:0556a7a62d3b7b6760c259"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ],
+      "source": "functions"
+    }
+  ],
+  "firestore": {
+    "database": "vanguard-db",
+    "location": "nam5",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "hosting": {
+    "site": "vanguard-management",
+    "public": "admin_dashboard/dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

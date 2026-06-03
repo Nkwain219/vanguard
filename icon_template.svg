@@ -1,0 +1,40 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="#080C18"/>
+  
+  <!-- Shield Shape -->
+  <path d="M512 150 L750 250 L750 450 Q750 650 512 850 Q274 650 274 450 L274 250 Z" 
+        fill="#1E40AF" 
+        stroke="#06B6D4" 
+        stroke-width="8"/>
+  
+  <!-- Inner Shield Highlight -->
+  <path d="M512 200 L700 280 L700 450 Q700 620 512 780 Q324 620 324 450 L324 280 Z" 
+        fill="#1E3A8A" 
+        opacity="0.6"/>
+  
+  <!-- Upward Arrow -->
+  <g transform="translate(512, 400)">
+    <!-- Arrow shaft -->
+    <rect x="-30" y="50" width="60" height="280" fill="#F59E0B" rx="10"/>
+    
+    <!-- Arrow head -->
+    <path d="M 0,-80 L 100,80 L 40,80 L 40,120 L -40,120 L -40,80 L -100,80 Z" 
+          fill="#F59E0B"/>
+    
+    <!-- Arrow highlight -->
+    <path d="M 0,-80 L 60,40 L 20,40 L 20,80 L -20,80 L -20,40 L -60,40 Z" 
+          fill="#FCD34D" 
+          opacity="0.5"/>
+  </g>
+  
+  <!-- Subtle glow effect -->
+  <circle cx="512" cy="400" r="300" fill="url(#glow)" opacity="0.2"/>
+  
+  <defs>
+    <radialGradient id="glow">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#080C18" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>

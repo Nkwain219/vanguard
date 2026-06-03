@@ -1,0 +1,47 @@
+
+=== Deploying to 'swiva-257eb'...
+
+i  deploying functions
+Running command: npm --prefix "$RESOURCE_DIR" run build
+
+> traitz-functions@1.0.0 build
+> tsc
+
+✔  functions: Finished running predeploy script.
+i  functions: preparing codebase default for deployment
+i  functions: ensuring required API cloudfunctions.googleapis.com is enabled...
+i  functions: ensuring required API cloudbuild.googleapis.com is enabled...
+i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled...
+⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory.
+⚠  functions: Please note that there will be breaking changes when you upgrade.
+i  functions: Loading and analyzing source code for codebase default to determine what to deploy
+Serving at port 8036
+
+i  extensions: ensuring required API firebaseextensions.googleapis.com is enabled...
+i  functions: preparing functions directory for uploading...
+⚠ DEPRECATION NOTICE: Action required before March 2026
+
+The functions.config() API and the Cloud Runtime Config service are deprecated. Deploys that rely on functions.config() will fail once Runtime Config shuts down in March 2026.
+
+The legacy functions:config:* CLI commands are deprecated and will be removed before March 2026.
+
+Learn how to migrate from functions.config() to the params package:
+
+https://firebase.google.com/docs/functions/config-env#migrate-config
+
+To convert existing functions.config() values to params, try the interactive migration command:
+
+  firebase functions:config:export
+
+i  functions: packaged /home/nkwain-blaise-ngam/IdeaProjects/traitz/functions (58.27 KB) for uploading
+i  functions: ensuring required API secretmanager.googleapis.com is enabled...
+i  functions: ensuring swiva-257eb@appspot.gserviceaccount.com access to secret MESOMB_APP_KEY.
+i  functions: ensuring swiva-257eb@appspot.gserviceaccount.com access to secret MESOMB_ACCESS_KEY.
+i  functions: ensuring swiva-257eb@appspot.gserviceaccount.com access to secret SMTP_HOST.
+i  functions: ensuring swiva-257eb@appspot.gserviceaccount.com access to secret SMTP_PORT.
+i  functions: ensuring swiva-257eb@appspot.gserviceaccount.com access to secret SMTP_SECURE.
+i  functions: ensuring swiva-257eb@appspot.gserviceaccount.com access to secret SMTP_USER.
+i  functions: ensuring swiva-257eb@appspot.gserviceaccount.com access to secret SMTP_PASS.
+i  functions: ensuring swiva-257eb@appspot.gserviceaccount.com access to secret SMTP_FROM.
+
+Error: Request to https://secretmanager.googleapis.com/v1/projects/swiva-257eb/secrets/SMTP_FROM:setIamPolicy had HTTP Error: 403, Permission 'secretmanager.secrets.setIamPolicy' denied for resource 'projects/swiva-257eb/secrets/SMTP_FROM' (or it may not exist).

@@ -1,0 +1,266 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // Helper Functions
+    // ============================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/vanguard_users/$(request.auth.uid)).data;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && getUserData().role == 'admin';
+    }
+    
+    function isSecretary() {
+      return isAuthenticated() && getUserData().role == 'secretary';
+    }
+    
+    function isAdminOrSecretary() {
+      return isAdmin() || isSecretary();
+    }
+    
+    function isEmployee() {
+      return isAuthenticated() && getUserData().role == 'employee';
+    }
+    
+    function isVolunteer() {
+      return isAuthenticated() && getUserData().role == 'volunteer';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isActive() {
+      return isAuthenticated() && getUserData().isActive == true;
+    }
+    
+    // ============================================================================
+    // Users Collection
+    // ============================================================================
+    
+    match /vanguard_users/{userId} {
+      // Anyone authenticated can read user profiles
+      allow read: if isAuthenticated() && isActive();
+      
+      // Only admins can create new users
+      allow create: if isAdmin();
+      
+      // Admins can update anyone, users can update their own profile (except role)
+      allow update: if isAdmin() || 
+                      (isOwner(userId) && isActive() && 
+                       request.resource.data.role == resource.data.role);
+      
+      // Only admins can delete users
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Employees Collection
+    // ============================================================================
+    
+    match /vanguard_employees/{employeeId} {
+      allow read: if isAuthenticated() && isActive();
+      allow write: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Volunteers Collection
+    // ============================================================================
+    
+    match /vanguard_volunteers/{volunteerId} {
+      allow read: if isAuthenticated() && isActive();
+      allow write: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Attendance Collection
+    // ============================================================================
+    
+    match /vanguard_attendance/{recordId} {
+      // Everyone can read their own attendance, admins/secretaries can read all
+      allow read: if isAuthenticated() && isActive() && 
+                    (isAdminOrSecretary() || resource.data.employeeId == request.auth.uid);
+      
+      // Users can create their own attendance records
+      allow create: if isAuthenticated() && isActive() && 
+                      request.resource.data.employeeId == request.auth.uid;
+      
+      // Only admins can update/delete attendance
+      allow update, delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Attendance Events Collection
+    // ============================================================================
+    
+    match /vanguard_attendance_events/{eventId} {
+      allow read: if isAuthenticated() && isActive();
+      allow create: if isAuthenticated() && isActive();
+      allow update, delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Leave Requests Collection
+    // ============================================================================
+    
+    match /vanguard_leave_requests/{requestId} {
+      // Admins and secretaries can read all, employees can read their own
+      allow read: if isAuthenticated() && isActive() && 
+                    (isAdminOrSecretary() || resource.data.employeeId == request.auth.uid);
+      
+      // Users can create their own leave requests
+      allow create: if isAuthenticated() && isActive() && 
+                      request.resource.data.employeeId == request.auth.uid;
+      
+      // Admins and secretaries can update any, users can update their own pending requests
+      allow update: if isAdminOrSecretary() || 
+                      (isOwner(resource.data.employeeId) && isActive() && 
+                       resource.data.status == 'pending');
+      
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Salary Requests Collection
+    // ============================================================================
+    
+    match /vanguard_salary_requests/{requestId} {
+      // Everyone can read their own requests, admins can read all
+      allow read: if isAuthenticated() && isActive() && 
+                    (isAdmin() || resource.data.employeeId == request.auth.uid);
+      
+      // Users can create their own salary requests
+      allow create: if isAuthenticated() && isActive() && 
+                      request.resource.data.employeeId == request.auth.uid;
+      
+      // Only admins can update/delete salary requests
+      allow update, delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Wallet Collections (Admin Only)
+    // ============================================================================
+    
+    match /vanguard_wallet_transactions/{transactionId} {
+      allow read, write: if isAdmin();
+    }
+    
+    match /vanguard_wallet_summary/{summaryId} {
+      allow read, write: if isAdmin();
+    }
+    
+    match /vanguard_company_wallet/{walletId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Deposits Collection (Admin Only)
+    // ============================================================================
+    
+    match /vanguard_deposits/{depositId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Work Locations Collection
+    // ============================================================================
+    
+    match /vanguard_work_locations/{locationId} {
+      // Everyone can read locations
+      allow read: if isAuthenticated() && isActive();
+      
+      // Only admins can manage locations
+      allow write: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Notifications Collection
+    // ============================================================================
+    
+    match /vanguard_notifications/{notificationId} {
+      // Everyone can read notifications
+      allow read: if isAuthenticated() && isActive();
+      
+      // Admins and secretaries can send notifications
+      allow create: if isAdminOrSecretary();
+      
+      // Users can update to mark as read
+      allow update: if isAuthenticated() && isActive();
+      
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Reminders Collection
+    // ============================================================================
+    
+    match /vanguard_reminders/{reminderId} {
+      // Users can read their own reminders
+      allow read: if isAuthenticated() && isActive() && 
+                    (isAdminOrSecretary() || 
+                     request.auth.uid in resource.data.recipientIds);
+      
+      // Admins and secretaries can create reminders
+      allow create: if isAdminOrSecretary();
+      
+      // Only creator or admin can update/delete
+      allow update, delete: if isAdmin() || 
+                              (isSecretary() && resource.data.createdBy == request.auth.uid);
+    }
+    
+    // ============================================================================
+    // Projects Collection
+    // ============================================================================
+    
+    match /vanguard_projects/{projectId} {
+      // Everyone can read projects
+      allow read: if isAuthenticated() && isActive();
+      
+      // Admins can manage projects
+      allow write: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Tasks Collection
+    // ============================================================================
+    
+    match /vanguard_tasks/{taskId} {
+      // Everyone can read tasks
+      allow read: if isAuthenticated() && isActive();
+      
+      // Admins and secretaries can create/update tasks
+      allow create, update: if isAdminOrSecretary();
+      
+      // Assigned users can update their task status
+      allow update: if isAuthenticated() && isActive() && 
+                      resource.data.assigneeId == request.auth.uid;
+      
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Employee Documents Collection
+    // ============================================================================
+    
+    match /vanguard_employee_documents/{documentId} {
+      // Users can read their own documents, admins can read all
+      allow read: if isAuthenticated() && isActive() && 
+                    (isAdmin() || resource.data.userId == request.auth.uid);
+      
+      // Only admins can manage documents
+      allow write: if isAdmin();
+    }
+  }
+}

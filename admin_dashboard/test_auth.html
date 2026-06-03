@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vanguard Auth Test</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff; }
+    .result { margin: 10px 0; padding: 10px; background: #2a2a2a; border-radius: 5px; }
+    .success { border-left: 4px solid #0f0; }
+    .error { border-left: 4px solid #f00; }
+    input, button { padding: 10px; margin: 5px; font-size: 14px; }
+    button { background: #0066cc; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0052a3; }
+  </style>
+</head>
+<body>
+  <h1>🔐 Vanguard Authentication Test</h1>
+  
+  <div>
+    <input type="email" id="email" placeholder="Email" value="admin@vanguard.com" style="width: 300px;">
+    <input type="password" id="password" placeholder="Password" style="width: 300px;">
+    <button onclick="testAuth()">Test Login</button>
+  </div>
+
+  <div id="results"></div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getFirestore, doc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "portfolio-5ee70.firebaseapp.com",
+      projectId: "portfolio-5ee70",
+      storageBucket: "portfolio-5ee70.firebasestorage.app",
+      messagingSenderId: "1082604851100",
+      appId: "1:1082604851100:web:91106c58186fd8f360c259"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app, 'vanguard-db');
+
+    window.testAuth = async function() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const results = document.getElementById('results');
+      results.innerHTML = '<div class="result">Testing...</div>';
+
+      try {
+        // Step 1: Test Firebase Auth
+        results.innerHTML += '<div class="result">Step 1: Testing Firebase Authentication...</div>';
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        results.innerHTML += `<div class="result success">✅ Auth Success! UID: ${user.uid}</div>`;
+
+        // Step 2: Check if vanguard_users collection exists
+        results.innerHTML += '<div class="result">Step 2: Checking vanguard_users collection...</div>';
+        const usersRef = collection(db, 'vanguard_users');
+        const usersSnapshot = await getDocs(usersRef);
+        results.innerHTML += `<div class="result success">✅ Collection exists! Found ${usersSnapshot.size} documents</div>`;
+
+        // Step 3: Check user document
+        results.innerHTML += '<div class="result">Step 3: Checking user document...</div>';
+        const userDocRef = doc(db, 'vanguard_users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          results.innerHTML += `<div class="result success">✅ User document found!</div>`;
+          results.innerHTML += `<div class="result"><pre>${JSON.stringify(userData, null, 2)}</pre></div>`;
+          
+          // Step 4: Check role
+          if (userData.role === 'admin') {
+            results.innerHTML += `<div class="result success">✅ User has admin role!</div>`;
+          } else {
+            results.innerHTML += `<div class="result error">❌ User role is "${userData.role}", not "admin"</div>`;
+          }
+
+          // Step 5: Check isActive
+          if (userData.isActive === true) {
+            results.innerHTML += `<div class="result success">✅ User is active!</div>`;
+          } else {
+            results.innerHTML += `<div class="result error">❌ User isActive is ${userData.isActive}</div>`;
+          }
+        } else {
+          results.innerHTML += `<div class="result error">❌ No document found for UID: ${user.uid}</div>`;
+          results.innerHTML += `<div class="result">Create a document in Firestore:<br>Collection: vanguard_users<br>Document ID: ${user.uid}</div>`;
+        }
+
+        // List all documents in vanguard_users
+        results.innerHTML += '<div class="result">All documents in vanguard_users:</div>';
+        usersSnapshot.forEach(doc => {
+          results.innerHTML += `<div class="result">Doc ID: ${doc.id}<br>Data: ${JSON.stringify(doc.data(), null, 2)}</div>`;
+        });
+
+      } catch (error) {
+        results.innerHTML += `<div class="result error">❌ Error: ${error.code}<br>${error.message}</div>`;
+        console.error('Full error:', error);
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+
+=== Deploying to 'swiva-257eb'...
+
+i  deploying functions
+Running command: npm --prefix "$RESOURCE_DIR" run build
+
+> traitz-functions@1.0.0 build
+> tsc
+
+src/index.ts(13,28): error TS2345: Argument of type 'string' is not assignable to parameter of type 'App'.
+
+Error: functions predeploy error: Command terminated with non-zero exit code 2
